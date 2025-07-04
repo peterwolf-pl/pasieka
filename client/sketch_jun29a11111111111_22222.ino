@@ -3,7 +3,7 @@
 #include "HX711.h"
 #include <Update.h>
 
-const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
+const char* firmware_url = "http://pszczol.one.pl/firmware/esp32.bin";
 const char* ssid = "AirPortExtreme";
 const char* password = "Flash255";
 const char* serverName = "http://pszczol.one.pl/api/add.php/";
@@ -13,23 +13,20 @@ HX711 scale;
 uint8_t dataPin = 16;
 uint8_t clockPin = 4;
 float previous = 0;
-/*
+
 void checkFirmwareUpdate() {
   WiFiClient client;
-  HTTPClient https;
+  HTTPClient http;
  Serial.println(" ");
   Serial.println("Sprawdzanie aktualizacji...");
-  https.begin(client, firmware_url);
-
-https.begin(client, serverName);
-https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  http.begin(client, firmware_url);
 
 
-  int httpCode = https.GET();
+  int httpCode = http.GET();
 
   if (httpCode == 200) {
-    int len = https.getSize();
-    WiFiClient* stream = https.getStreamPtr();
+    int len = http.getSize();
+    WiFiClient* stream = http.getStreamPtr();
 
     if (Update.begin(len)) {
       size_t written = Update.writeStream(*stream);
@@ -43,15 +40,16 @@ https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
       }
     } else {
       Serial.println("Nie można rozpocząć aktualizacji.");
+    
     }
   } else {
     Serial.println("Brak aktualizacji. ");
      Serial.println(" ");
   }
-
-  
+http.end();
+   Serial.println(" ");
 }
-*/
+
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -65,12 +63,13 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
  Serial.println(" ");
+
   scale.begin(dataPin, clockPin);
   scale.set_offset(-598696);
   scale.set_scale(-25.353687);
   scale.tare();
 
- // checkFirmwareUpdate();
+  
 }
 
 void loop() {
@@ -92,23 +91,26 @@ void loop() {
   Serial.println(" dBm");
 
   WiFiClient client;
-  HTTPClient https;
-  https.begin(client, serverName);
-  https.addHeader("Content-Type", "application/json");
-  https.addHeader("Authorization", authHeader);
+  HTTPClient http;
+  http.begin(client, serverName);
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Authorization", authHeader);
 
   String jsonPayload = "{\"weight\":" + String(weight) + "}";
 
- int httpResponseCode = https.POST(jsonPayload);
+ int httpResponseCode = http.POST(jsonPayload);
 //
  Serial.print("HTTP Response code: ");
  Serial.println(httpResponseCode);
  Serial.println(" ");
 //  Serial.println(" ");
 //  https.end();
-//  delay(60000);
-https.end();
- delay(10000);
+ delay(600);
+http.end();
+ delay(6000*5);
+ checkFirmwareUpdate();
+ delay(6000*5*5);
 }
 
 float getStableWeight() {
