@@ -3,10 +3,10 @@
 #include "HX711.h"
 #include <Update.h>
 
-const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin/";
+const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_33.bin";
 const char* ssid = "AirPortExtreme";
 const char* password = "Flash255";
-const char* serverName = "https://pszczol.one.pl/api/add.php/";
+const char* serverName = "https://pszczol.one.pl/api/add.php";
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
 
 HX711 scale;
@@ -20,9 +20,7 @@ void checkFirmwareUpdate() {
  Serial.println(" ");
   Serial.println("Sprawdzanie aktualizacji...");
   https.begin(client, firmware_url);
-
-https.begin(client, serverName);
-https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
 
 
 
@@ -46,8 +44,8 @@ https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
       Serial.println("Nie można rozpocząć aktualizacji.");
     }
   } else {
-    Serial.println("Brak aktualizacji. );
-     Serial.println(" ");
+    Serial.println("Brak aktualizacji.");
+    Serial.println(" ");
   }
 
   https.end();
