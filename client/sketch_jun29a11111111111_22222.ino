@@ -3,17 +3,17 @@
 #include "HX711.h"
 #include <Update.h>
 
-const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin/";
+const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
 const char* ssid = "AirPortExtreme";
 const char* password = "Flash255";
-const char* serverName = "https://pszczol.one.pl/api/add.php/";
+const char* serverName = "http://pszczol.one.pl/api/add.php/";
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
 
 HX711 scale;
 uint8_t dataPin = 16;
 uint8_t clockPin = 4;
 float previous = 0;
-
+/*
 void checkFirmwareUpdate() {
   WiFiClient client;
   HTTPClient https;
@@ -23,7 +23,6 @@ void checkFirmwareUpdate() {
 
 https.begin(client, serverName);
 https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-
 
 
   int httpCode = https.GET();
@@ -46,13 +45,13 @@ https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
       Serial.println("Nie można rozpocząć aktualizacji.");
     }
   } else {
-    Serial.println("Brak aktualizacji. );
+    Serial.println("Brak aktualizacji. ");
      Serial.println(" ");
   }
 
-  https.end();
+  
 }
-
+*/
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -71,7 +70,7 @@ void setup() {
   scale.set_scale(-25.353687);
   scale.tare();
 
-  checkFirmwareUpdate();
+ // checkFirmwareUpdate();
 }
 
 void loop() {
@@ -100,14 +99,16 @@ void loop() {
 
   String jsonPayload = "{\"weight\":" + String(weight) + "}";
 
-//  int httpResponseCode = https.POST(jsonPayload);
+ int httpResponseCode = https.POST(jsonPayload);
 //
-//  Serial.print("HTTP Response code: ");
-//  Serial.println(httpResponseCode);
-//  Serial.println(" ");
+ Serial.print("HTTP Response code: ");
+ Serial.println(httpResponseCode);
+ Serial.println(" ");
 //  Serial.println(" ");
 //  https.end();
 //  delay(60000);
+https.end();
+ delay(10000);
 }
 
 float getStableWeight() {
