@@ -1,8 +1,8 @@
 <?php
 $dbhost = "localhost";
-$dbuser = "_apibot";
-$dbpass = "";
-$dbname = "_apibot";
+$dbuser = "srv51934_apibot";
+$dbpass = "KQ9atgTFpEsHDvDHCPZT";
+$dbname = "srv51934_apibot";
 
 $conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 

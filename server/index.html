@@ -56,7 +56,13 @@
     <div class="footer">&copy; 2025 pszczol.one.pl by peterwolf.pl </div>
 <script>
     fetch('data.php')
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 403) {
+          window.location.href = 'login.php';
+          throw new Error('Unauthorized');
+        }
+        return res.json();
+      })
       .then(data => {
         const ctx = document.getElementById('ulChart').getContext('2d');
         new Chart(ctx, {
@@ -97,7 +103,8 @@
             }
           }
         });
-      });
+      })
+      .catch(err => console.error(err));
 </script>
 </body>
 
