@@ -7,6 +7,7 @@
 const char* firmware_url = "http://pszczol.one.pl/firmware/esp32.bin";
 const char* config_url = "http://pszczol.one.pl/settings.json";
 const char* report_url = "http://pszczol.one.pl/api/report_update.php";
+const char* change_url = "http://pszczol.one.pl/api/report_change.php";
 const char* ssid = "AirPortExtreme";
 const char* password = "Flash255";
 const char* serverName = "http://pszczol.one.pl/api/add.php/";
@@ -18,8 +19,16 @@ uint8_t clockPin = 4;
 float previous = 0;
 bool firmwareUpdateFlag = false;
 int loopDelay = 10;
+float offsetVal = -598696;
+float scaleVal = -25.353687;
+
+bool prevFirmwareUpdate = false;
+int prevLoopDelay = 10;
+float prevOffsetVal = -598696;
+float prevScaleVal = -25.353687;
 
 void reportUpdate(bool success);
+void reportChange();
 
 bool checkFirmwareUpdate() {
   WiFiClient client;
@@ -60,20 +69,39 @@ bool checkFirmwareUpdate() {
   return success;
 }
 
-void fetchConfig() {
+bool fetchConfig() {
   HTTPClient http;
   http.begin(config_url);
   int httpCode = http.GET();
+  bool triggerUpdate = false;
   if (httpCode == 200) {
     String payload = http.getString();
-    StaticJsonDocument<200> doc;
+    StaticJsonDocument<256> doc;
     DeserializationError err = deserializeJson(doc, payload);
     if (!err) {
       firmwareUpdateFlag = doc["firmwareUpdate"];
       loopDelay = doc["loopDelay"];
+      offsetVal = doc["offset"];
+      scaleVal = doc["scale"];
     }
   }
   http.end();
+
+  if (firmwareUpdateFlag != prevFirmwareUpdate ||
+      loopDelay != prevLoopDelay ||
+      offsetVal != prevOffsetVal ||
+      scaleVal != prevScaleVal) {
+    Serial.println("CONFIG CHANGE DETECTED");
+    reportChange();
+    scale.set_offset(offsetVal);
+    scale.set_scale(scaleVal);
+    triggerUpdate = (!prevFirmwareUpdate && firmwareUpdateFlag);
+    prevFirmwareUpdate = firmwareUpdateFlag;
+    prevLoopDelay = loopDelay;
+    prevOffsetVal = offsetVal;
+    prevScaleVal = scaleVal;
+  }
+  return triggerUpdate;
 }
 
 void reportUpdate(bool success) {
@@ -81,6 +109,18 @@ void reportUpdate(bool success) {
   http.begin(report_url);
   http.addHeader("Content-Type", "application/json");
   String payload = String("{\"success\":") + (success ? "true" : "false") + "}";
+  http.POST(payload);
+  http.end();
+}
+
+void reportChange() {
+  HTTPClient http;
+  http.begin(change_url);
+  http.addHeader("Content-Type", "application/json");
+  String payload = String("{\"firmwareUpdate\":") + (firmwareUpdateFlag ? "true" : "false") +
+                    ",\"loopDelay\":" + String(loopDelay) +
+                    ",\"offset\":" + String(offsetVal) +
+                    ",\"scale\":" + String(scaleVal) + "}";
   http.POST(payload);
   http.end();
 }
@@ -100,11 +140,14 @@ void setup() {
  Serial.println(" ");
 
   scale.begin(dataPin, clockPin);
-  scale.set_offset(-598696);
-  scale.set_scale(-25.353687);
+  scale.set_offset(offsetVal);
+  scale.set_scale(scaleVal);
   scale.tare();
 
-  fetchConfig();
+  bool doUpdateStartup = fetchConfig();
+  if (doUpdateStartup) {
+    checkFirmwareUpdate();
+  }
 }
 
 void loop() {
@@ -115,10 +158,9 @@ void loop() {
     delay(5000);
     return;
   }
+  bool doUpdate = fetchConfig();
 
-  fetchConfig();
-
-  if (firmwareUpdateFlag) {
+  if (doUpdate) {
     checkFirmwareUpdate();
   }
 

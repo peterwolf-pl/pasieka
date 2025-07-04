@@ -1,4 +1,6 @@
 {
   "firmwareUpdate": false,
-  "loopDelay": 10
+  "loopDelay": 10,
+  "offset": -598696,
+  "scale": -25.353687
 }

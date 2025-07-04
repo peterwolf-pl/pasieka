@@ -10,9 +10,13 @@ $configFile = __DIR__ . '/settings.json';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firmwareUpdate = isset($_POST['firmwareUpdate']);
     $loopDelay = intval($_POST['loopDelay']);
+    $offset = floatval($_POST['offset']);
+    $scale  = floatval($_POST['scale']);
     $config = [
         'firmwareUpdate' => $firmwareUpdate,
-        'loopDelay' => $loopDelay
+        'loopDelay' => $loopDelay,
+        'offset' => $offset,
+        'scale' => $scale
     ];
     file_put_contents($configFile, json_encode($config));
     $message = 'Zapisano konfigurację.';
@@ -21,9 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $config = json_decode(file_get_contents($configFile), true);
         $firmwareUpdate = $config['firmwareUpdate'];
         $loopDelay = $config['loopDelay'];
+        $offset = $config['offset'];
+        $scale  = $config['scale'];
     } else {
         $firmwareUpdate = false;
         $loopDelay = 10;
+        $offset = -598696;
+        $scale  = -25.353687;
     }
 }
 ?>
@@ -48,6 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="600" <?php if($loopDelay==600) echo 'selected'; ?>>600s</option>
             <option value="3600" <?php if($loopDelay==3600) echo 'selected'; ?>>3600s</option>
         </select>
+    </label><br>
+    <label>Offset:
+        <input type="text" name="offset" value="<?php echo htmlspecialchars($offset); ?>">
+    </label><br>
+    <label>Scale:
+        <input type="text" name="scale" value="<?php echo htmlspecialchars($scale); ?>">
     </label><br>
     <button type="submit">SETUP</button>
 </form>
