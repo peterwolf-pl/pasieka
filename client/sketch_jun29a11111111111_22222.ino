@@ -69,6 +69,7 @@ void setup() {
   scale.set_scale(-25.353687);
   scale.tare();
 
+  // Check for new firmware only once at startup
   checkFirmwareUpdate();
 }
 
