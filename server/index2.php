@@ -18,29 +18,42 @@ if (!isset($_SESSION['logged_in'])) {
 <a href="logout.php">Wyloguj</a>
 
 <script>
-fetch('data.php')
-    .then(response => response.json())
-    .then(data => {
-        const ctx = document.getElementById('chart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.timestamps,
-                datasets: [{
-                    label: 'Waga ula (g)',
-                    data: data.weights,
-                    borderColor: 'green',
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: false }
-                }
+let chart;
+
+function fetchAndUpdate() {
+    fetch('data.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!chart) {
+                const ctx = document.getElementById('chart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.timestamps,
+                        datasets: [{
+                            label: 'Waga ula (g)',
+                            data: data.weights,
+                            borderColor: 'green',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: false }
+                        }
+                    }
+                });
+            } else {
+                chart.data.labels = data.timestamps;
+                chart.data.datasets[0].data = data.weights;
+                chart.update();
             }
         });
-    });
+}
+
+fetchAndUpdate();
+setInterval(fetchAndUpdate, 30000);
 </script>
 </body>
 </html>
