@@ -2,8 +2,11 @@
 #include <HTTPClient.h>
 #include "HX711.h"
 #include <Update.h>
+#include <ArduinoJson.h>
 
 const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
+const char* config_url = "http://pszczol.one.pl/settings.json";
+const char* report_url = "http://pszczol.one.pl/api/report_update.php";
 const char* ssid = "AirPortExtreme";
 const char* password = "Flash255";
 const char* serverName = "http://pszczol.one.pl/api/add.php/";
@@ -13,19 +16,19 @@ HX711 scale;
 uint8_t dataPin = 16;
 uint8_t clockPin = 4;
 float previous = 0;
-/*
-void checkFirmwareUpdate() {
+bool firmwareUpdateFlag = false;
+int loopDelay = 10;
+
+void reportUpdate(bool success);
+bool checkFirmwareUpdate() {
   WiFiClient client;
   HTTPClient https;
- Serial.println(" ");
+  Serial.println(" ");
   Serial.println("Sprawdzanie aktualizacji...");
   https.begin(client, firmware_url);
 
-https.begin(client, serverName);
-https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-
-
   int httpCode = https.GET();
+  bool success = false;
 
   if (httpCode == 200) {
     int len = https.getSize();
@@ -35,9 +38,9 @@ https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
       size_t written = Update.writeStream(*stream);
 
       if (written == len && Update.end()) {
-         Serial.println(" ");
+        Serial.println(" ");
         Serial.println("Aktualizacja zakończona sukcesem, restartuję...");
-        ESP.restart();
+        success = true;
       } else {
         Serial.println("Błąd aktualizacji: " + String(Update.getError()));
       }
@@ -46,12 +49,41 @@ https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
     }
   } else {
     Serial.println("Brak aktualizacji. ");
-     Serial.println(" ");
+    Serial.println(" ");
   }
 
-  
+  https.end();
+  reportUpdate(success);
+  if (success) {
+    ESP.restart();
+  }
+  return success;
 }
-*/
+
+void fetchConfig() {
+  HTTPClient http;
+  http.begin(config_url);
+  int httpCode = http.GET();
+  if (httpCode == 200) {
+    String payload = http.getString();
+    StaticJsonDocument<200> doc;
+    DeserializationError err = deserializeJson(doc, payload);
+    if (!err) {
+      firmwareUpdateFlag = doc["firmwareUpdate"];
+      loopDelay = doc["loopDelay"];
+    }
+  }
+  http.end();
+}
+
+void reportUpdate(bool success) {
+  HTTPClient http;
+  http.begin(report_url);
+  http.addHeader("Content-Type", "application/json");
+  String payload = String("{\"success\":") + (success ? "true" : "false") + "}";
+  http.POST(payload);
+  http.end();
+}
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -70,7 +102,7 @@ void setup() {
   scale.set_scale(-25.353687);
   scale.tare();
 
- // checkFirmwareUpdate();
+  fetchConfig();
 }
 
 void loop() {
@@ -80,6 +112,12 @@ void loop() {
     WiFi.reconnect();
     delay(5000);
     return;
+  }
+
+  fetchConfig();
+
+  if (firmwareUpdateFlag) {
+    checkFirmwareUpdate();
   }
 
   float weight = getStableWeight();
@@ -107,8 +145,8 @@ void loop() {
 //  Serial.println(" ");
 //  https.end();
 //  delay(60000);
-https.end();
- delay(10000);
+  https.end();
+  delay(loopDelay * 1000);
 }
 
 float getStableWeight() {
