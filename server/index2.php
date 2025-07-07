@@ -18,11 +18,18 @@ if (!isset($_SESSION['logged_in'])) {
 <a href="logout.php">Wyloguj</a>
 
 <script>
-fetch('data.php')
-    .then(response => response.json())
-    .then(data => {
+let chart;
+
+async function loadData() {
+    const res = await fetch('data.php');
+    if (!res.ok) {
+        return;
+    }
+    const data = await res.json();
+
+    if (!chart) {
         const ctx = document.getElementById('chart').getContext('2d');
-        new Chart(ctx, {
+        chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: data.timestamps,
@@ -40,7 +47,15 @@ fetch('data.php')
                 }
             }
         });
-    });
+    } else {
+        chart.data.labels = data.timestamps;
+        chart.data.datasets[0].data = data.weights;
+        chart.update();
+    }
+}
+
+loadData();
+setInterval(loadData, 10000);
 </script>
 </body>
 </html>

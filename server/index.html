@@ -55,17 +55,20 @@
 
     <div class="footer">&copy; 2025 pszczol.one.pl by peterwolf.pl </div>
 <script>
-    fetch('data.php')
-      .then(res => {
-        if (res.status === 403) {
-          window.location.href = 'login.php';
-          throw new Error('Unauthorized');
-        }
-        return res.json();
-      })
-      .then(data => {
+    let chart;
+
+    async function loadData() {
+      const res = await fetch('data.php');
+      if (res.status === 403) {
+        window.location.href = 'login.php';
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!chart) {
         const ctx = document.getElementById('ulChart').getContext('2d');
-        new Chart(ctx, {
+        chart = new Chart(ctx, {
           type: 'line',
           data: {
             labels: data.timestamps,
@@ -103,8 +106,15 @@
             }
           }
         });
-      })
-      .catch(err => console.error(err));
+      } else {
+        chart.data.labels = data.timestamps;
+        chart.data.datasets[0].data = data.weights;
+        chart.update();
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 10000);
 </script>
 </body>
 
