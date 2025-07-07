@@ -7,9 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($data['weight'])) {
         $weight = floatval($data['weight']);
+        $board  = isset($data['board']) ? intval($data['board']) : 1;
 
-        $stmt = $conn->prepare("INSERT INTO measurements (weight) VALUES (?)");
-        $stmt->bind_param("d", $weight);
+        $stmt = $conn->prepare("INSERT INTO measurements (weight, board_id) VALUES (?, ?)");
+        $stmt->bind_param("di", $weight, $board);
         $stmt->execute();
 
         echo json_encode(["status" => "success"]);
