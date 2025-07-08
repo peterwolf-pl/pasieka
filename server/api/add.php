@@ -7,12 +7,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($data['weight'])) {
         $weight = floatval($data['weight']);
+        $board  = isset($data['board']) ? intval($data['board']) : 1;
 
-        $stmt = $conn->prepare("INSERT INTO measurements (weight) VALUES (?)");
-        $stmt->bind_param("d", $weight);
-        $stmt->execute();
-
-        echo json_encode(["status" => "success"]);
+        $stmt = $conn->prepare("INSERT INTO measurements (weight, board_id) VALUES (?, ?)");
+        if($stmt){
+            $stmt->bind_param("di", $weight, $board);
+            if($stmt->execute()){
+                echo json_encode(["status" => "success"]);
+            }else{
+                http_response_code(500);
+                echo json_encode(["error" => $stmt->error]);
+            }
+        } else {
+            http_response_code(500);
+            echo json_encode(["error" => $conn->error]);
+        }
     } else {
         http_response_code(400);
         echo json_encode(["error" => "Missing weight"]);

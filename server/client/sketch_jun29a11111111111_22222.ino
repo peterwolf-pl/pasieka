@@ -8,9 +8,13 @@ const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
 const char* config_url = "http://pszczol.one.pl/settings.json";
 const char* report_url = "http://pszczol.one.pl/api/report_update.php";
 const char* change_url = "http://pszczol.one.pl/api/report_change.php";
-const char* ssid = "AirPortExtreme";
-const char* password = "Flash255";
-const char* serverName = "http://pszczol.one.pl/api/add.php/";
+String wifi_ssid = "AirPortExtreme";
+String wifi_password = "Flash255";
+const char* serverName = "http://pszczol.one.pl/api/add.php";
+int boardId = 1;
+int prevBoardId = boardId;
+String prev_ssid = wifi_ssid;
+String prev_password = wifi_password;
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
 
 HX711 scale;
@@ -29,6 +33,7 @@ float prevScaleVal = -25.353687;
 
 void reportUpdate(bool success);
 void reportChange();
+
 bool checkFirmwareUpdate() {
   WiFiClient client;
   HTTPClient https;
@@ -60,7 +65,6 @@ bool checkFirmwareUpdate() {
     Serial.println("Brak aktualizacji. ");
     Serial.println(" ");
   }
-
   https.end();
   reportUpdate(success);
   if (success) {
@@ -83,6 +87,15 @@ bool fetchConfig() {
       loopDelay = doc["loopDelay"];
       offsetVal = doc["offset"];
       scaleVal = doc["scale"];
+      if (doc.containsKey("wifi_ssid")) {
+        wifi_ssid = String((const char*)doc["wifi_ssid"]);
+      }
+      if (doc.containsKey("wifi_password")) {
+        wifi_password = String((const char*)doc["wifi_password"]);
+      }
+      if (doc.containsKey("board_id")) {
+        boardId = doc["board_id"];
+      }
     }
   }
   http.end();
@@ -90,7 +103,10 @@ bool fetchConfig() {
   if (firmwareUpdateFlag != prevFirmwareUpdate ||
       loopDelay != prevLoopDelay ||
       offsetVal != prevOffsetVal ||
-      scaleVal != prevScaleVal) {
+      scaleVal != prevScaleVal ||
+      wifi_ssid != prev_ssid ||
+      wifi_password != prev_password ||
+      boardId != prevBoardId) {
     Serial.println("CONFIG CHANGE DETECTED");
     reportChange();
     scale.set_offset(offsetVal);
@@ -100,6 +116,20 @@ bool fetchConfig() {
     prevLoopDelay = loopDelay;
     prevOffsetVal = offsetVal;
     prevScaleVal = scaleVal;
+    prevBoardId = boardId;
+    if (wifi_ssid != prev_ssid || wifi_password != prev_password) {
+      Serial.println("Reconnecting WiFi...");
+      WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
+      int attempts = 0;
+      while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
+      }
+      Serial.println();
+      prev_ssid = wifi_ssid;
+      prev_password = wifi_password;
+    }
   }
   return triggerUpdate;
 }
@@ -124,9 +154,10 @@ void reportChange() {
   http.POST(payload);
   http.end();
 }
+
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
 
   Serial.println("Łączenie z WiFi...");
   while (WiFi.status() != WL_CONNECTED) {
@@ -137,6 +168,7 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
  Serial.println(" ");
+
   scale.begin(dataPin, clockPin);
   scale.set_offset(offsetVal);
   scale.set_scale(scaleVal);
@@ -156,7 +188,6 @@ void loop() {
     delay(5000);
     return;
   }
-
   bool doUpdate = fetchConfig();
 
   if (doUpdate) {
@@ -173,22 +204,23 @@ void loop() {
   Serial.println(" dBm");
 
   WiFiClient client;
-  HTTPClient https;
-  https.begin(client, serverName);
-  https.addHeader("Content-Type", "application/json");
-  https.addHeader("Authorization", authHeader);
+  HTTPClient http;
+  http.begin(client, serverName);
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Authorization", authHeader);
 
-  String jsonPayload = "{\"weight\":" + String(weight) + "}";
+  String jsonPayload = "{\"weight\":" + String(weight) + ",\"board\":" + String(boardId) + "}";
 
- int httpResponseCode = https.POST(jsonPayload);
+ int httpResponseCode = http.POST(jsonPayload);
 //
  Serial.print("HTTP Response code: ");
  Serial.println(httpResponseCode);
  Serial.println(" ");
 //  Serial.println(" ");
 //  https.end();
-//  delay(60000);
-  https.end();
+ delay(600);
+  http.end();
   delay(loopDelay * 1000);
 }
 
