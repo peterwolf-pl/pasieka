@@ -70,16 +70,20 @@ if (!isset($_SESSION['logged_in'])) {
         <div class="row">
             <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart1"></canvas></div>
-            </div>
+            </div>   </div>
+            
+              <div class="row">
             <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart2"></canvas></div>
-            </div>
+            </div>   </div>
+                    <div class="row">
             <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart3"></canvas></div>
-            </div>
+            </div>   </div>
+                          <div class="row">
             <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart4"></canvas></div>
-            </div>
+            </div>   </div>
         </div>
     </div>
 
