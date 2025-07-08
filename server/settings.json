@@ -2,8 +2,7 @@
   "firmwareUpdate": false,
   "loopDelay": 10,
   "offset": -598696,
-  "scale": -25.353687
-,
+  "scale": -25.353687,
   "wifi_ssid": "",
   "wifi_password": ""
 }
