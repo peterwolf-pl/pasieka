@@ -3,8 +3,10 @@ This project contains two parts:
 - **client** – ESP32 sketch for the beehive scale
 - **server** – PHP website with API endpoints
 
-The setup page (`server/setup.php`) lets you configure WiFi credentials and the
-board ID stored in `server/settings.json`.
+The setup page (`server/setup.php`) lets you configure WiFi credentials and
+other settings. It now displays four separate forms so you can adjust each
+board's configuration individually. All values are saved in
+`server/settings.json`.
 
 `server/settings.json` now holds configuration for four boards (IDs 1–4). Each
 device reads its section based on its compiled `BOARD_ID` value.
