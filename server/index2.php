@@ -52,8 +52,8 @@ if (!isset($_SESSION['logged_in'])) {
 <body>
     <div class="setup-link"><a href="setup.php">Ustawienia</a> | <a href="logout.php">Wyloguj</a></div>
     <header>
-        <h1>🐝 JEBAĆ PIS </h1>
-        <p>Monitoring masy ula i walenia w chuja<br> w czasie rzeczywistym</p>
+        <h1>🐝 Waga Ula</h1>
+        <p>Monitoring masy ula i w czasie rzeczywistym</p>
     </header>
 
     <div class="container mt-4">

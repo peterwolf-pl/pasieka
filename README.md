@@ -11,3 +11,7 @@ form and allows you to choose the chart colour and type. The page displays four
 charts so you can monitor up to four boards simultaneously.
 
 To verify the PHP scripts you can run `php -l` on `server/setup.php`, `server/index2.php`, `server/data.php` and `server/api/add.php`.
+
+The SQL script `server/sql/update_board_id.sql` adds the `board_id` column to the
+`measurements` table and updates previous records so the new multi-board
+features work correctly.
