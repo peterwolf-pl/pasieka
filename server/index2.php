@@ -68,16 +68,16 @@ if (!isset($_SESSION['logged_in'])) {
             <button id="saveStyle" class="btn btn-sm btn-primary ms-3">Zapisz</button>
         </div>
         <div class="row">
-            <div class="col-md-6 mb-4">
+            <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart1"></canvas></div>
             </div>
-            <div class="col-md-6 mb-4">
+            <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart2"></canvas></div>
             </div>
-            <div class="col-md-6 mb-4">
+            <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart3"></canvas></div>
             </div>
-            <div class="col-md-6 mb-4">
+            <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart4"></canvas></div>
             </div>
         </div>

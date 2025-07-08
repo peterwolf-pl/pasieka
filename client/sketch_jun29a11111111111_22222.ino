@@ -11,8 +11,9 @@ const char* change_url = "http://pszczol.one.pl/api/report_change.php";
 String wifi_ssid = "AirPortExtreme";
 String wifi_password = "Flash255";
 const char* serverName = "http://pszczol.one.pl/api/add.php";
-int boardId = 1;
-int prevBoardId = boardId;
+
+const int BOARD_ID = 1; // change for each device (1-4)
+int boardId = BOARD_ID;
 String prev_ssid = wifi_ssid;
 String prev_password = wifi_password;
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
@@ -80,21 +81,24 @@ bool fetchConfig() {
   bool triggerUpdate = false;
   if (httpCode == 200) {
     String payload = http.getString();
-    StaticJsonDocument<256> doc;
+    StaticJsonDocument<1024> doc;
     DeserializationError err = deserializeJson(doc, payload);
-    if (!err) {
-      firmwareUpdateFlag = doc["firmwareUpdate"];
-      loopDelay = doc["loopDelay"];
-      offsetVal = doc["offset"];
-      scaleVal = doc["scale"];
-      if (doc.containsKey("wifi_ssid")) {
-        wifi_ssid = String((const char*)doc["wifi_ssid"]);
-      }
-      if (doc.containsKey("wifi_password")) {
-        wifi_password = String((const char*)doc["wifi_password"]);
-      }
-      if (doc.containsKey("board_id")) {
-        boardId = doc["board_id"];
+    if (!err && doc.containsKey("boards")) {
+      JsonArray boards = doc["boards"].as<JsonArray>();
+      for (JsonObject b : boards) {
+        if (b["board_id"] == boardId) {
+          firmwareUpdateFlag = b["firmwareUpdate"];
+          loopDelay = b["loopDelay"];
+          offsetVal = b["offset"];
+          scaleVal = b["scale"];
+          if (b.containsKey("wifi_ssid")) {
+            wifi_ssid = String((const char*)b["wifi_ssid"]);
+          }
+          if (b.containsKey("wifi_password")) {
+            wifi_password = String((const char*)b["wifi_password"]);
+          }
+          break;
+        }
       }
     }
   }
@@ -105,8 +109,7 @@ bool fetchConfig() {
       offsetVal != prevOffsetVal ||
       scaleVal != prevScaleVal ||
       wifi_ssid != prev_ssid ||
-      wifi_password != prev_password ||
-      boardId != prevBoardId) {
+      wifi_password != prev_password) {
     Serial.println("CONFIG CHANGE DETECTED");
     reportChange();
     scale.set_offset(offsetVal);
@@ -116,7 +119,6 @@ bool fetchConfig() {
     prevLoopDelay = loopDelay;
     prevOffsetVal = offsetVal;
     prevScaleVal = scaleVal;
-    prevBoardId = boardId;
     if (wifi_ssid != prev_ssid || wifi_password != prev_password) {
       Serial.println("Reconnecting WiFi...");
       WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
