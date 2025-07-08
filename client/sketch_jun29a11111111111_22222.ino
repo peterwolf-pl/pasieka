@@ -12,6 +12,7 @@ String wifi_ssid = "AirPortExtreme";
 String wifi_password = "Flash255";
 const char* serverName = "http://pszczol.one.pl/api/add.php";
 int boardId = 1;
+int prevBoardId = boardId;
 String prev_ssid = wifi_ssid;
 String prev_password = wifi_password;
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
@@ -92,6 +93,9 @@ bool fetchConfig() {
       if (doc.containsKey("wifi_password")) {
         wifi_password = String((const char*)doc["wifi_password"]);
       }
+      if (doc.containsKey("board_id")) {
+        boardId = doc["board_id"];
+      }
     }
   }
   http.end();
@@ -101,7 +105,8 @@ bool fetchConfig() {
       offsetVal != prevOffsetVal ||
       scaleVal != prevScaleVal ||
       wifi_ssid != prev_ssid ||
-      wifi_password != prev_password) {
+      wifi_password != prev_password ||
+      boardId != prevBoardId) {
     Serial.println("CONFIG CHANGE DETECTED");
     reportChange();
     scale.set_offset(offsetVal);
@@ -111,6 +116,7 @@ bool fetchConfig() {
     prevLoopDelay = loopDelay;
     prevOffsetVal = offsetVal;
     prevScaleVal = scaleVal;
+    prevBoardId = boardId;
     if (wifi_ssid != prev_ssid || wifi_password != prev_password) {
       Serial.println("Reconnecting WiFi...");
       WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
