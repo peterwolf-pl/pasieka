@@ -12,11 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $loopDelay = intval($_POST['loopDelay']);
     $offset = floatval($_POST['offset']);
     $scale  = floatval($_POST['scale']);
+    $ssid  = $_POST['wifi_ssid'] ?? '';
+    $pass  = $_POST['wifi_password'] ?? '';
+    $boardId = intval($_POST['board_id'] ?? 1);
     $config = [
         'firmwareUpdate' => $firmwareUpdate,
         'loopDelay' => $loopDelay,
         'offset' => $offset,
-        'scale' => $scale
+        'scale' => $scale,
+        'wifi_ssid' => $ssid,
+        'wifi_password' => $pass,
+        'board_id' => $boardId
     ];
     file_put_contents($configFile, json_encode($config));
     $message = 'Zapisano konfigurację.';
@@ -27,11 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loopDelay = $config['loopDelay'];
         $offset = $config['offset'];
         $scale  = $config['scale'];
+        $ssid   = $config['wifi_ssid'] ?? '';
+        $pass   = $config['wifi_password'] ?? '';
+        $boardId = $config['board_id'] ?? 1;
     } else {
         $firmwareUpdate = false;
         $loopDelay = 10;
         $offset = -598696;
         $scale  = -25.353687;
+        $ssid = '';
+        $pass = '';
+        $boardId = 1;
     }
 }
 ?>
@@ -62,6 +74,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </label><br>
     <label>Scale:
         <input type="text" name="scale" value="<?php echo htmlspecialchars($scale); ?>">
+    </label><br>
+    <label>WiFi SSID:
+        <input type="text" name="wifi_ssid" value="<?php echo htmlspecialchars($ssid); ?>">
+    </label><br>
+    <label>WiFi Hasło:
+        <input type="password" name="wifi_password" value="<?php echo htmlspecialchars($pass); ?>">
+    </label><br>
+    <label>ID płytki:
+        <input type="number" name="board_id" value="<?php echo htmlspecialchars($boardId); ?>" min="1">
     </label><br>
     <button type="submit">SETUP</button>
 </form>

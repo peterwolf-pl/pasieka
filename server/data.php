@@ -7,7 +7,11 @@ if (!isset($_SESSION['logged_in'])) {
 
 include 'includes/config.php';
 
-$result = $conn->query("SELECT * FROM measurements ORDER BY timestamp ASC");
+$board = isset($_GET['board']) ? intval($_GET['board']) : 1;
+$stmt = $conn->prepare("SELECT weight, timestamp FROM measurements WHERE board_id=? ORDER BY timestamp ASC");
+$stmt->bind_param("i", $board);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $data = ['weights' => [], 'timestamps' => []];
 while ($row = $result->fetch_assoc()) {
