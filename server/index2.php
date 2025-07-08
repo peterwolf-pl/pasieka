@@ -66,7 +66,8 @@ if (!isset($_SESSION['logged_in'])) {
                 </select>
             </label>
             <button id="saveStyle" class="btn btn-sm btn-primary ms-3">Zapisz</button>
-        </div>
+<a href="https://pszczol.one.pl/setup.php">setup</a>     
+</div>
         <div class="row">
             <div class="col-6 mb-4">
                 <div class="chart-container"><canvas id="chart1"></canvas></div>
