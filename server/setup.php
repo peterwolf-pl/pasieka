@@ -15,27 +15,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ssid  = $_POST['wifi_ssid'] ?? '';
     $pass  = $_POST['wifi_password'] ?? '';
     $boardId = intval($_POST['board_id'] ?? 1);
-    $config = [
+
+    $all = [];
+    if (file_exists($configFile)) {
+        $all = json_decode(file_get_contents($configFile), true) ?: [];
+    }
+    if (!isset($all['boards'])) {
+        $all['boards'] = [];
+    }
+    $boardConfig = [
+        'board_id' => $boardId,
         'firmwareUpdate' => $firmwareUpdate,
         'loopDelay' => $loopDelay,
         'offset' => $offset,
         'scale' => $scale,
         'wifi_ssid' => $ssid,
-        'wifi_password' => $pass,
-        'board_id' => $boardId
+        'wifi_password' => $pass
     ];
-    file_put_contents($configFile, json_encode($config));
+    $updated = false;
+    foreach ($all['boards'] as $i => $b) {
+        if (($b['board_id'] ?? null) == $boardId) {
+            $all['boards'][$i] = $boardConfig;
+            $updated = true;
+            break;
+        }
+    }
+    if (!$updated) {
+        $all['boards'][] = $boardConfig;
+    }
+    file_put_contents($configFile, json_encode($all, JSON_PRETTY_PRINT));
     $message = 'Zapisano konfigurację.';
 } else {
     if (file_exists($configFile)) {
-        $config = json_decode(file_get_contents($configFile), true);
-        $firmwareUpdate = $config['firmwareUpdate'];
-        $loopDelay = $config['loopDelay'];
-        $offset = $config['offset'];
-        $scale  = $config['scale'];
-        $ssid   = $config['wifi_ssid'] ?? '';
-        $pass   = $config['wifi_password'] ?? '';
-        $boardId = $config['board_id'] ?? 1;
+        $all = json_decode(file_get_contents($configFile), true);
+        $boardId = intval($_GET['board_id'] ?? 1);
+        $found = false;
+        if (isset($all['boards'])) {
+            foreach ($all['boards'] as $b) {
+                if (($b['board_id'] ?? null) == $boardId) {
+                    $firmwareUpdate = $b['firmwareUpdate'];
+                    $loopDelay = $b['loopDelay'];
+                    $offset = $b['offset'];
+                    $scale  = $b['scale'];
+                    $ssid   = $b['wifi_ssid'] ?? '';
+                    $pass   = $b['wifi_password'] ?? '';
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if (!$found) {
+            $firmwareUpdate = false;
+            $loopDelay = 10;
+            $offset = -598696;
+            $scale  = -25.353687;
+            $ssid = '';
+            $pass = '';
+        }
     } else {
         $firmwareUpdate = false;
         $loopDelay = 10;
@@ -43,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $scale  = -25.353687;
         $ssid = '';
         $pass = '';
-        $boardId = 1;
+        $boardId = intval($_GET['board_id'] ?? 1);
     }
 }
 ?>

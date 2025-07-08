@@ -6,6 +6,9 @@ This project contains two parts:
 The setup page (`server/setup.php`) lets you configure WiFi credentials and the
 board ID stored in `server/settings.json`.
 
+`server/settings.json` now holds configuration for four boards (IDs 1–4). Each
+device reads its section based on its compiled `BOARD_ID` value.
+
 `index2.php` mirrors the main `index.html` page but adds a link to the setup
 form and allows you to choose the chart colour and type. The page displays four
 charts so you can monitor up to four boards simultaneously.

@@ -1,9 +1,40 @@
 {
-  "firmwareUpdate": false,
-  "loopDelay": 10,
-  "offset": -598696,
-  "scale": -25.353687,
-  "wifi_ssid": "AirPortExtreme",
-  "wifi_password": "Flash255",
-  "board_id": 1
+  "boards": [
+    {
+      "board_id": 1,
+      "firmwareUpdate": false,
+      "loopDelay": 10,
+      "offset": -598696,
+      "scale": -25.353687,
+      "wifi_ssid": "AirPortExtreme",
+      "wifi_password": "Flash255"
+    },
+    {
+      "board_id": 2,
+      "firmwareUpdate": false,
+      "loopDelay": 10,
+      "offset": -598696,
+      "scale": -25.353687,
+      "wifi_ssid": "AirPortExtreme",
+      "wifi_password": "Flash255"
+    },
+    {
+      "board_id": 3,
+      "firmwareUpdate": false,
+      "loopDelay": 10,
+      "offset": -598696,
+      "scale": -25.353687,
+      "wifi_ssid": "AirPortExtreme",
+      "wifi_password": "Flash255"
+    },
+    {
+      "board_id": 4,
+      "firmwareUpdate": false,
+      "loopDelay": 10,
+      "offset": -598696,
+      "scale": -25.353687,
+      "wifi_ssid": "AirPortExtreme",
+      "wifi_password": "Flash255"
+    }
+  ]
 }
