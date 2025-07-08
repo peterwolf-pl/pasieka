@@ -4,13 +4,16 @@
 #include <Update.h>
 #include <ArduinoJson.h>
 
-const char* firmware_url = "http://pszczol.one.pl/firmware/esp32.bin";
+const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
 const char* config_url = "http://pszczol.one.pl/settings.json";
 const char* report_url = "http://pszczol.one.pl/api/report_update.php";
 const char* change_url = "http://pszczol.one.pl/api/report_change.php";
-const char* ssid = "AirPortExtreme";
-const char* password = "Flash255";
-const char* serverName = "http://pszczol.one.pl/api/add.php/";
+String wifi_ssid = "AirPortExtreme";
+String wifi_password = "Flash255";
+const char* serverName = "http://pszczol.one.pl/api/add.php";
+int boardId = 1;
+String prev_ssid = wifi_ssid;
+String prev_password = wifi_password;
 String authHeader = "Basic bGFzZXI6bGFzZXIxMjM=";
 
 HX711 scale;
@@ -32,17 +35,17 @@ void reportChange();
 
 bool checkFirmwareUpdate() {
   WiFiClient client;
-  HTTPClient http;
+  HTTPClient https;
   Serial.println(" ");
   Serial.println("Sprawdzanie aktualizacji...");
-  http.begin(client, firmware_url);
+  https.begin(client, firmware_url);
 
-  int httpCode = http.GET();
+  int httpCode = https.GET();
   bool success = false;
 
   if (httpCode == 200) {
-    int len = http.getSize();
-    WiFiClient* stream = http.getStreamPtr();
+    int len = https.getSize();
+    WiFiClient* stream = https.getStreamPtr();
 
     if (Update.begin(len)) {
       size_t written = Update.writeStream(*stream);
@@ -61,7 +64,7 @@ bool checkFirmwareUpdate() {
     Serial.println("Brak aktualizacji. ");
     Serial.println(" ");
   }
-  http.end();
+  https.end();
   reportUpdate(success);
   if (success) {
     ESP.restart();
@@ -83,6 +86,12 @@ bool fetchConfig() {
       loopDelay = doc["loopDelay"];
       offsetVal = doc["offset"];
       scaleVal = doc["scale"];
+      if (doc.containsKey("wifi_ssid")) {
+        wifi_ssid = String((const char*)doc["wifi_ssid"]);
+      }
+      if (doc.containsKey("wifi_password")) {
+        wifi_password = String((const char*)doc["wifi_password"]);
+      }
     }
   }
   http.end();
@@ -90,7 +99,9 @@ bool fetchConfig() {
   if (firmwareUpdateFlag != prevFirmwareUpdate ||
       loopDelay != prevLoopDelay ||
       offsetVal != prevOffsetVal ||
-      scaleVal != prevScaleVal) {
+      scaleVal != prevScaleVal ||
+      wifi_ssid != prev_ssid ||
+      wifi_password != prev_password) {
     Serial.println("CONFIG CHANGE DETECTED");
     reportChange();
     scale.set_offset(offsetVal);
@@ -100,6 +111,19 @@ bool fetchConfig() {
     prevLoopDelay = loopDelay;
     prevOffsetVal = offsetVal;
     prevScaleVal = scaleVal;
+    if (wifi_ssid != prev_ssid || wifi_password != prev_password) {
+      Serial.println("Reconnecting WiFi...");
+      WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
+      int attempts = 0;
+      while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
+      }
+      Serial.println();
+      prev_ssid = wifi_ssid;
+      prev_password = wifi_password;
+    }
   }
   return triggerUpdate;
 }
@@ -127,7 +151,7 @@ void reportChange() {
 
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
 
   Serial.println("Łączenie z WiFi...");
   while (WiFi.status() != WL_CONNECTED) {
@@ -180,7 +204,7 @@ void loop() {
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Authorization", authHeader);
 
-  String jsonPayload = "{\"weight\":" + String(weight) + "}";
+  String jsonPayload = "{\"weight\":" + String(weight) + ",\"board\":" + String(boardId) + "}";
 
  int httpResponseCode = http.POST(jsonPayload);
 //
