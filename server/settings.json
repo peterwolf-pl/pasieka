@@ -2,5 +2,8 @@
   "firmwareUpdate": false,
   "loopDelay": 10,
   "offset": -598696,
-  "scale": -25.353687
+  "scale": -25.353687,
+  "wifi_ssid": "AirPortExtreme",
+  "wifi_password": "Flash255",
+  "board_id": 1
 }
