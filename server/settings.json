@@ -1,40 +1,40 @@
 {
-  "boards": [
-    {
-      "board_id": 1,
-      "firmwareUpdate": false,
-      "loopDelay": 10,
-      "offset": -598696,
-      "scale": -25.353687,
-      "wifi_ssid": "AirPortExtreme",
-      "wifi_password": "Flash255"
-    },
-    {
-      "board_id": 2,
-      "firmwareUpdate": false,
-      "loopDelay": 10,
-      "offset": -598696,
-      "scale": -25.353687,
-      "wifi_ssid": "AirPortExtreme",
-      "wifi_password": "Flash255"
-    },
-    {
-      "board_id": 3,
-      "firmwareUpdate": false,
-      "loopDelay": 10,
-      "offset": -598696,
-      "scale": -25.353687,
-      "wifi_ssid": "AirPortExtreme",
-      "wifi_password": "Flash255"
-    },
-    {
-      "board_id": 4,
-      "firmwareUpdate": false,
-      "loopDelay": 10,
-      "offset": -598696,
-      "scale": -25.353687,
-      "wifi_ssid": "AirPortExtreme",
-      "wifi_password": "Flash255"
-    }
-  ]
+    "boards": [
+        {
+            "board_id": 1,
+            "firmwareUpdate": false,
+            "loopDelay": 60,
+            "offset": -556037,
+            "scale": -25.809177,
+            "wifi_ssid": "laser",
+            "wifi_password": "laser1234"
+        },
+        {
+            "board_id": 2,
+            "firmwareUpdate": false,
+            "loopDelay": 600,
+            "offset": -598696,
+            "scale": -25.353687,
+            "wifi_ssid": "laser",
+            "wifi_password": "laser1234"
+        },
+        {
+            "board_id": 3,
+            "firmwareUpdate": false,
+            "loopDelay": 10,
+            "offset": -598696,
+            "scale": -25.353687,
+            "wifi_ssid": "laser",
+            "wifi_password": "laser1234"
+        },
+        {
+            "board_id": 4,
+            "firmwareUpdate": false,
+            "loopDelay": 10,
+            "offset": -598696,
+            "scale": -25.353687,
+            "wifi_ssid": "laser",
+            "wifi_password": "laser1234"
+        }
+    ]
 }

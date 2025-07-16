@@ -1,4 +1,4 @@
-<?php
+s<?php
 session_start();
 if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
@@ -9,7 +9,7 @@ if (!isset($_SESSION['logged_in'])) {
 <html lang="pl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Waga Ula | pszczol.one.pl</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,7 +25,7 @@ if (!isset($_SESSION['logged_in'])) {
             position: relative;
             margin: auto;
             height: 80vh;
-            width: 95vw;
+            width: 100%;
             max-width: 100%;
         }
         header {
@@ -50,10 +50,10 @@ if (!isset($_SESSION['logged_in'])) {
     </style>
 </head>
 <body>
-    <div class="setup-link"><a href="setup.php">Ustawienia</a> | <a href="logout.php">Wyloguj</a></div>
+    
     <header>
         <h1>🐝 Waga Ula</h1>
-        <p>Monitoring masy ula i w czasie rzeczywistym</p>
+        <p>Monitoring masy ula w czasie rzeczywistym</p>
     </header>
 
     <div class="container mt-4">
@@ -69,22 +69,22 @@ if (!isset($_SESSION['logged_in'])) {
 <a href="https://pszczol.one.pl/setup.php">setup</a>     
 </div>
         <div class="row">
-            <div class="col-6 mb-4">
+            
                 <div class="chart-container"><canvas id="chart1"></canvas></div>
-            </div>   </div>
+              </div>
             
               <div class="row">
-            <div class="col-6 mb-4">
+           
                 <div class="chart-container"><canvas id="chart2"></canvas></div>
-            </div>   </div>
+            </div>   
                     <div class="row">
-            <div class="col-6 mb-4">
+           
                 <div class="chart-container"><canvas id="chart3"></canvas></div>
-            </div>   </div>
+            </div>   
                           <div class="row">
-            <div class="col-6 mb-4">
+           
                 <div class="chart-container"><canvas id="chart4"></canvas></div>
-            </div>   </div>
+            </div>  
         </div>
     </div>
 
