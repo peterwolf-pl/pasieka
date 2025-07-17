@@ -89,6 +89,7 @@ for ($id = 1; $id <= 4; $id++) {
             <option value="10" <?php if($b['loopDelay']==10) echo 'selected'; ?>>10s</option>
             <option value="30" <?php if($b['loopDelay']==30) echo 'selected'; ?>>30s</option>
             <option value="60" <?php if($b['loopDelay']==60) echo 'selected'; ?>>60s</option>
+            <option value="300" <?php if($b['loopDelay']==600) echo 'selected'; ?>>600s</option>
             <option value="600" <?php if($b['loopDelay']==600) echo 'selected'; ?>>600s</option>
             <option value="3600" <?php if($b['loopDelay']==3600) echo 'selected'; ?>>3600s</option>
         </select>
