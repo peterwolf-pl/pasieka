@@ -131,22 +131,22 @@ if (!isset($_SESSION['logged_in'])) {
                 });
 
                 const lastWeight = data.weights[data.weights.length - 1];
-                const weightAt = hours => {
+                const deltaWithin = hours => {
                     const threshold = now - hours * 60 * 60 * 1000;
-                    let w = data.weights[0];
-                    for (let i = 0; i < data.timestamps.length; i++) {
+                    let earliest = lastWeight;
+                    for (let i = data.timestamps.length - 1; i >= 0; i--) {
                         const ts = new Date(data.timestamps[i]).getTime();
-                        if (ts <= threshold) {
-                            w = data.weights[i];
+                        if (ts >= threshold) {
+                            earliest = data.weights[i];
                         } else {
                             break;
                         }
                     }
-                    return w;
+                    return lastWeight - earliest;
                 };
-                const delta12 = lastWeight - weightAt(12);
-                const delta24 = lastWeight - weightAt(24);
-                const delta72 = lastWeight - weightAt(72);
+                const delta12 = deltaWithin(12);
+                const delta24 = deltaWithin(24);
+                const delta72 = deltaWithin(72);
                 document.getElementById(`delta${id}`).textContent = `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
 
                 const ctx = document.getElementById(`chart${id}`).getContext('2d');
