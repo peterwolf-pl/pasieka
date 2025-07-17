@@ -1,4 +1,4 @@
-s<?php
+<?php
 session_start();
 if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
@@ -69,22 +69,26 @@ if (!isset($_SESSION['logged_in'])) {
 <a href="https://pszczol.one.pl/setup.php">setup</a>     
 </div>
         <div class="row">
-            
+
+                <h5 id="delta1" class="text-center mb-2"></h5>
                 <div class="chart-container"><canvas id="chart1"></canvas></div>
               </div>
-            
+
               <div class="row">
-           
+
+                <h5 id="delta2" class="text-center mb-2"></h5>
                 <div class="chart-container"><canvas id="chart2"></canvas></div>
-            </div>   
+            </div>
                     <div class="row">
-           
+
+                <h5 id="delta3" class="text-center mb-2"></h5>
                 <div class="chart-container"><canvas id="chart3"></canvas></div>
-            </div>   
+            </div>
                           <div class="row">
-           
+
+                <h5 id="delta4" class="text-center mb-2"></h5>
                 <div class="chart-container"><canvas id="chart4"></canvas></div>
-            </div>  
+            </div>
         </div>
     </div>
 
@@ -114,14 +118,45 @@ if (!isset($_SESSION['logged_in'])) {
                 return res.json();
             })
             .then(data => {
+                const now = Date.now();
+                const dayAgo = now - 24 * 60 * 60 * 1000;
+                const filteredWeights = [];
+                const filteredTimestamps = [];
+                data.timestamps.forEach((t, i) => {
+                    const ts = new Date(t).getTime();
+                    if (ts >= dayAgo) {
+                        filteredWeights.push(data.weights[i]);
+                        filteredTimestamps.push(t);
+                    }
+                });
+
+                const lastWeight = data.weights[data.weights.length - 1];
+                const deltaWithin = hours => {
+                    const threshold = now - hours * 60 * 60 * 1000;
+                    let earliest = lastWeight;
+                    for (let i = data.timestamps.length - 1; i >= 0; i--) {
+                        const ts = new Date(data.timestamps[i]).getTime();
+                        if (ts >= threshold) {
+                            earliest = data.weights[i];
+                        } else {
+                            break;
+                        }
+                    }
+                    return lastWeight - earliest;
+                };
+                const delta12 = deltaWithin(12);
+                const delta24 = deltaWithin(24);
+                const delta72 = deltaWithin(72);
+                document.getElementById(`delta${id}`).textContent = `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
+
                 const ctx = document.getElementById(`chart${id}`).getContext('2d');
                 new Chart(ctx, {
                     type: typeInput.value,
                     data: {
-                        labels: data.timestamps,
+                        labels: filteredTimestamps,
                         datasets: [{
                             label: `Masa ula ${id} (g)`,
-                            data: data.weights,
+                            data: filteredWeights,
                             borderWidth: 2,
                             borderColor: colorInput.value,
                             backgroundColor: colorInput.value + '33',
