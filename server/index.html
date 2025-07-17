@@ -90,37 +90,34 @@
         })
         .then(data => {
           const now = Date.now();
-          const halfDayAgo = now - 12 * 60 * 60 * 1000;
           const dayAgo = now - 24 * 60 * 60 * 1000;
-          const threeDaysAgo = now - 72 * 60 * 60 * 1000;
           const filteredWeights = [];
           const filteredTimestamps = [];
-          let first12 = null;
-          let last12 = null;
-          let first24 = null;
-          let last24 = null;
-          let first72 = null;
-          let last72 = null;
           data.timestamps.forEach((t, i) => {
             const ts = new Date(t).getTime();
-            if (ts >= threeDaysAgo) {
-              if (first72 === null) first72 = data.weights[i];
-              last72 = data.weights[i];
-            }
             if (ts >= dayAgo) {
-              if (first24 === null) first24 = data.weights[i];
-              last24 = data.weights[i];
               filteredWeights.push(data.weights[i]);
               filteredTimestamps.push(t);
             }
-            if (ts >= halfDayAgo) {
-              if (first12 === null) first12 = data.weights[i];
-              last12 = data.weights[i];
-            }
           });
-          const delta12 = first12 !== null && last12 !== null ? last12 - first12 : 0;
-          const delta24 = first24 !== null && last24 !== null ? last24 - first24 : 0;
-          const delta72 = first72 !== null && last72 !== null ? last72 - first72 : 0;
+
+          const lastWeight = data.weights[data.weights.length - 1];
+          const weightAt = hours => {
+            const threshold = now - hours * 60 * 60 * 1000;
+            let w = data.weights[0];
+            for (let i = 0; i < data.timestamps.length; i++) {
+              const ts = new Date(data.timestamps[i]).getTime();
+              if (ts <= threshold) {
+                w = data.weights[i];
+              } else {
+                break;
+              }
+            }
+            return w;
+          };
+          const delta12 = lastWeight - weightAt(12);
+          const delta24 = lastWeight - weightAt(24);
+          const delta72 = lastWeight - weightAt(72);
           document.getElementById(`delta${id}`).textContent =
             `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
 
