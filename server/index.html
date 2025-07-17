@@ -48,23 +48,35 @@
     </header>
 
     <div class="container mt-4">
+        <div class="mb-3 text-center">
+            <label>Od: <input type="datetime-local" id="startRange"></label>
+            <label class="ms-2">Do: <input type="datetime-local" id="endRange"></label>
+            <button id="applyRange" class="btn btn-sm btn-primary ms-2">Pokaż</button>
+            <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="12">Ostatnie 12h</button>
+            <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="24">Ostatnie 24h</button>
+            <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="72">Ostatnie 72h</button>
+        </div>
         <div class="row">
             <div class="col-md-6 mb-4">
+                <h5 id="delta1" class="text-center mb-2"></h5>
                 <div class="chart-container">
                     <canvas id="chart1"></canvas>
                 </div>
             </div>
             <div class="col-md-6 mb-4">
+                <h5 id="delta2" class="text-center mb-2"></h5>
                 <div class="chart-container">
                     <canvas id="chart2"></canvas>
                 </div>
             </div>
             <div class="col-md-6 mb-4">
+                <h5 id="delta3" class="text-center mb-2"></h5>
                 <div class="chart-container">
                     <canvas id="chart3"></canvas>
                 </div>
             </div>
             <div class="col-md-6 mb-4">
+                <h5 id="delta4" class="text-center mb-2"></h5>
                 <div class="chart-container">
                     <canvas id="chart4"></canvas>
                 </div>
@@ -75,58 +87,118 @@
     <div class="footer">&copy; 2025 pszczol.one.pl by peterwolf.pl </div>
 <script>
     const boards = [1, 2, 3, 4];
-    boards.forEach(id => {
-      fetch(`data.php?board=${id}`)
-        .then(res => {
-          if (res.status === 403) {
-            window.location.href = 'login.php';
-            throw new Error('Unauthorized');
-          }
-          return res.json();
-        })
-        .then(data => {
-          const ctx = document.getElementById(`chart${id}`).getContext('2d');
-          new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: data.timestamps,
-              datasets: [{
-                label: `Masa ula ${id} (g)`,
-                data: data.weights,
-                borderWidth: 2,
-                borderColor: '#198754',
-                backgroundColor: 'rgba(25, 135, 84, 0.2)',
-                fill: true,
-                tension: 0.4,
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: false,
-                  title: {
-                    display: true,
-                    text: 'Waga [g]'
-                  }
-                },
-                x: {
-                  ticks: {
-                    maxRotation: 90,
-                    minRotation: 45
+    const charts = {};
+    const startInput = document.getElementById('startRange');
+    const endInput = document.getElementById('endRange');
+    const applyBtn = document.getElementById('applyRange');
+
+    function setRange(hours) {
+        const now = new Date();
+        endInput.value = now.toISOString().slice(0,16);
+        const start = new Date(now.getTime() - hours * 60 * 60 * 1000);
+        startInput.value = start.toISOString().slice(0,16);
+    }
+
+    document.querySelectorAll('.quick-range').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setRange(parseInt(btn.dataset.hours,10));
+            loadCharts();
+        });
+    });
+
+    applyBtn.addEventListener('click', loadCharts);
+
+    function loadCharts(){
+      const start = new Date(startInput.value).getTime();
+      const end = new Date(endInput.value).getTime();
+      const now = Date.now();
+      boards.forEach(id => {
+        fetch(`data.php?board=${id}`)
+          .then(res => {
+            if (res.status === 403) {
+              window.location.href = 'login.php';
+              throw new Error('Unauthorized');
+            }
+            return res.json();
+          })
+          .then(data => {
+            const filteredWeights = [];
+            const filteredTimestamps = [];
+            data.timestamps.forEach((t, i) => {
+              const ts = new Date(t).getTime();
+              if (ts >= start && ts <= end) {
+                filteredWeights.push(data.weights[i]);
+                filteredTimestamps.push(t);
+              }
+            });
+
+          const lastWeight = data.weights[data.weights.length - 1];
+          const deltaWithin = hours => {
+            const threshold = now - hours * 60 * 60 * 1000;
+            let earliest = lastWeight;
+            for (let i = data.timestamps.length - 1; i >= 0; i--) {
+              const ts = new Date(data.timestamps[i]).getTime();
+              if (ts >= threshold) {
+                earliest = data.weights[i];
+              } else {
+                break;
+              }
+            }
+            return lastWeight - earliest;
+          };
+          const delta12 = deltaWithin(12);
+          const delta24 = deltaWithin(24);
+          const delta72 = deltaWithin(72);
+          document.getElementById(`delta${id}`).textContent =
+            `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
+
+            const ctx = document.getElementById(`chart${id}`).getContext('2d');
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: filteredTimestamps,
+                datasets: [{
+                  label: `Masa ula ${id} (g)`,
+                  data: filteredWeights,
+                  borderWidth: 2,
+                  borderColor: '#198754',
+                  backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                  fill: true,
+                  tension: 0.4,
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    title: {
+                      display: true,
+                      text: 'Waga [g]'
+                    }
                   },
-                  title: {
-                    display: true,
-                    text: 'Czas pomiaru'
+                  x: {
+                    ticks: {
+                      maxRotation: 90,
+                      minRotation: 45
+                    },
+                    title: {
+                      display: true,
+                      text: 'Czas pomiaru'
+                    }
                   }
                 }
               }
-            }
-          });
-        })
-        .catch(err => console.error(err));
-    });
+            });
+          })
+          .catch(err => console.error(err));
+      });
+    }
+
+    setRange(24);
+    loadCharts();
 </script>
 </body>
 
