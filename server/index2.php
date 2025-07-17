@@ -1,4 +1,4 @@
-s<?php
+<?php
 session_start();
 if (!isset($_SESSION['logged_in'])) {
     header('Location: login.php');
@@ -120,24 +120,29 @@ if (!isset($_SESSION['logged_in'])) {
             .then(data => {
                 const now = Date.now();
                 const dayAgo = now - 24 * 60 * 60 * 1000;
+                const threeDaysAgo = now - 72 * 60 * 60 * 1000;
                 const filteredWeights = [];
                 const filteredTimestamps = [];
-                let firstWeight = null;
-                let lastWeight = null;
+                let first24 = null;
+                let last24 = null;
+                let first72 = null;
+                let last72 = null;
                 data.timestamps.forEach((t, i) => {
                     const ts = new Date(t).getTime();
+                    if (ts >= threeDaysAgo) {
+                        if (first72 === null) first72 = data.weights[i];
+                        last72 = data.weights[i];
+                    }
                     if (ts >= dayAgo) {
-                        if (firstWeight === null) firstWeight = data.weights[i];
-                        lastWeight = data.weights[i];
+                        if (first24 === null) first24 = data.weights[i];
+                        last24 = data.weights[i];
                         filteredWeights.push(data.weights[i]);
                         filteredTimestamps.push(t);
                     }
                 });
-                let delta = 0;
-                if (firstWeight !== null && lastWeight !== null) {
-                    delta = lastWeight - firstWeight;
-                }
-                document.getElementById(`delta${id}`).textContent = `\u0394 24h: ${delta.toFixed(2)} g`;
+                const delta24 = first24 !== null && last24 !== null ? last24 - first24 : 0;
+                const delta72 = first72 !== null && last72 !== null ? last72 - first72 : 0;
+                document.getElementById(`delta${id}`).textContent = `\u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
 
                 const ctx = document.getElementById(`chart${id}`).getContext('2d');
                 new Chart(ctx, {
