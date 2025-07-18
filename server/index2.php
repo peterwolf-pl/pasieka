@@ -11,7 +11,7 @@ if (!isset($_SESSION['logged_in'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Waga Ula | pszczol.one.pl</title>
+    <title>Waga Pasieki | pszczol.one.pl</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -52,11 +52,12 @@ if (!isset($_SESSION['logged_in'])) {
 <body>
     
     <header>
-        <h1>🐝 Waga Ula</h1>
-        <p>Monitoring masy ula w czasie rzeczywistym</p>
+        <h1>🐝 Waga Ula 🐝</h1>
+        <p>🐝 Monitoring masy ula 🐝 w czasie rzeczywistym i do tego jeszcze HD w 3D 🐝</p>
     </header>
 
     <div class="container mt-4">
+        <div class="mb-3 text-center">
         <div class="mb-3">
             <label>Kolor linii: <input type="color" id="lineColor" value="#198754"></label>
             <label class="ms-3">Typ wykresu:
@@ -68,10 +69,10 @@ if (!isset($_SESSION['logged_in'])) {
             <button id="saveStyle" class="btn btn-sm btn-primary ms-3">Zapisz</button>
 <a href="https://pszczol.one.pl/setup.php">setup</a>
         </div>
-        <div class="mb-3 text-center">
+        
             <label>Od: <input type="datetime-local" id="startRange"></label>
             <label class="ms-2">Do: <input type="datetime-local" id="endRange"></label>
-            <button id="applyRange" class="btn btn-sm btn-primary ms-2">Pokaż</button>
+            <button id="applyRange" class="btn btn-sm btn-primary ms-2">Pokaż</button><br><br>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="12">Ostatnie 12h</button>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="24">Ostatnie 24h</button>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="72">Ostatnie 72h</button>
