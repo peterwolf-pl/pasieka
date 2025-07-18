@@ -12,9 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-<h1>
+<center>
+
+<h1>zaloguj się do pasieki</h1>
 <form method="post">
     <input type="password" name="password" placeholder="Hasło" required>
     <button type="submit">Zaloguj</button>
 </form>
-</h1>
+</center>
