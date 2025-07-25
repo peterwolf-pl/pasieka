@@ -45,4 +45,6 @@ INMP441 pins like so:
 - **SD** to GPIO13 (D7)
 
 This firmware reads the microphone and periodically posts the frequency to the
-same `add.php` endpoint without weight measurements.
+same `add.php` endpoint without weight measurements. It relies on the
+`core_esp8266_i2s.h` API from the ESP8266 Arduino core, so be sure the
+appropriate board package is installed when compiling.
