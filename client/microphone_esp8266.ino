@@ -21,6 +21,9 @@ const int SAMPLES = 1024;
 int32_t micBuffer[SAMPLES];
 
 void setupMic() {
+  // Initialize I2S and set pin mapping before starting reception
+  i2s_begin();
+  i2s_set_pin(MIC_BCLK, MIC_WS, MIC_SD);
   // Enable I2S reception only and configure the sample rate
   i2s_rxtx_begin(true, false);
   i2s_set_rate(SAMPLE_RATE);
