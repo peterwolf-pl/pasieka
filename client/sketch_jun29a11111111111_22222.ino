@@ -3,6 +3,7 @@
 #include "HX711.h"
 #include <Update.h>
 #include <ArduinoJson.h>
+#include "driver/i2s.h"
 
 const char* firmware_url = "https://pszczol.one.pl/firmware/esp32_latest.bin";
 const char* config_url = "http://pszczol.one.pl/settings.json";
@@ -26,6 +27,15 @@ bool firmwareUpdateFlag = false;
 int loopDelay = 10;
 float offsetVal = -598696;
 float scaleVal = -25.353687;
+
+// INMP441 microphone pins (see README for wiring)
+#define MIC_BCLK 26
+#define MIC_WS   25
+#define MIC_SD   33
+const i2s_port_t I2S_PORT = I2S_NUM_0;
+const int SAMPLE_RATE = 16000;
+const int SAMPLES = 1024;
+int32_t micBuffer[SAMPLES];
 
 bool prevFirmwareUpdate = false;
 int prevLoopDelay = 10;
@@ -157,6 +167,45 @@ void reportChange() {
   http.end();
 }
 
+void setupMicrophone() {
+  i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),
+    .sample_rate = SAMPLE_RATE,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
+    .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
+    .communication_format = I2S_COMM_FORMAT_I2S,
+    .intr_alloc_flags = 0,
+    .dma_buf_count = 4,
+    .dma_buf_len = 256,
+    .use_apll = false,
+    .tx_desc_auto_clear = false,
+    .fixed_mclk = 0
+  };
+  i2s_pin_config_t pin_config = {
+    .bck_io_num = MIC_BCLK,
+    .ws_io_num = MIC_WS,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num = MIC_SD
+  };
+  i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+  i2s_set_pin(I2S_PORT, &pin_config);
+}
+
+float readFrequency() {
+  size_t bytesRead;
+  i2s_read(I2S_PORT, &micBuffer, sizeof(micBuffer), &bytesRead, portMAX_DELAY);
+  int samples = bytesRead / sizeof(int32_t);
+  int crossings = 0;
+  for (int i = 1; i < samples; i++) {
+    if ((micBuffer[i - 1] < 0 && micBuffer[i] >= 0) ||
+        (micBuffer[i - 1] > 0 && micBuffer[i] <= 0)) {
+      crossings++;
+    }
+  }
+  float freq = (crossings / 2.0f) * ((float)SAMPLE_RATE / samples);
+  return freq;
+}
+
 void setup() {
   Serial.begin(115200);
   WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
@@ -175,6 +224,7 @@ void setup() {
   scale.set_offset(offsetVal);
   scale.set_scale(scaleVal);
   scale.tare();
+  setupMicrophone();
 
   bool doUpdateStartup = fetchConfig();
   if (doUpdateStartup) {
@@ -198,10 +248,13 @@ void loop() {
 
   float weight = getStableWeight();
   int32_t rssi = WiFi.RSSI();
+  float hz = readFrequency();
 
   Serial.print("Waga: ");
   Serial.print(weight);
-  Serial.print(" g, RSSI: ");
+  Serial.print(" g, Hz: ");
+  Serial.print(hz);
+  Serial.print(", RSSI: ");
   Serial.print(rssi);
   Serial.println(" dBm");
 
@@ -212,7 +265,7 @@ void loop() {
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Authorization", authHeader);
 
-  String jsonPayload = "{\"weight\":" + String(weight) + ",\"board\":" + String(boardId) + "}";
+  String jsonPayload = "{\"weight\":" + String(weight) + ",\"hz\":" + String(hz) + ",\"board\":" + String(boardId) + "}";
 
  int httpResponseCode = http.POST(jsonPayload);
 //

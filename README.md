@@ -20,3 +20,14 @@ To verify the PHP scripts you can run `php -l` on `server/setup.php`, `server/in
 The SQL script `server/sql/update_board_id.sql` adds the `board_id` column to the
 `measurements` table and updates previous records so the new multi-board
 features work correctly.
+The script `server/sql/add_frequency_column.sql` adds a `frequency` column so you can
+store microphone readings in Hz alongside weight measurements.
+
+The ESP32 firmware reads an INMP441 digital microphone. Connect the module as
+follows:
+
+- **BCLK** to GPIO26
+- **WS/LRCL** to GPIO25
+- **DOUT** to GPIO33
+
+The sketch sends the measured frequency in the `hz` field of the API request.
