@@ -33,3 +33,16 @@ pins as follows:
 - **SD** to GPIO33
 
 The sketch sends the measured frequency in the `hz` field of the API request.
+
+For environments where only the microphone is needed, a simplified
+`microphone_esp8266.ino` sketch is provided for the ESP8266. Connect the
+INMP441 pins like so:
+
+- **VCC** to the ESP8266's 3.3&nbsp;V
+- **GND** to any ground
+- **SCK (BCLK)** to GPIO14 (D5)
+- **WS** to GPIO15 (D8)
+- **SD** to GPIO13 (D7)
+
+This firmware reads the microphone and periodically posts the frequency to the
+same `add.php` endpoint without weight measurements.
