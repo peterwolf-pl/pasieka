@@ -48,3 +48,6 @@ This firmware reads the microphone and periodically posts the frequency to the
 same `add.php` endpoint without weight measurements. It relies on the
 `core_esp8266_i2s.h` API from the ESP8266 Arduino core, so be sure the
 appropriate board package is installed when compiling.
+
+The charts on both public and admin pages now show weight deltas for the last
+12, 24 and 72 hours above each plot.
