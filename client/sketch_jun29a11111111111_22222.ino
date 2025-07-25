@@ -28,7 +28,12 @@ int loopDelay = 10;
 float offsetVal = -598696;
 float scaleVal = -25.353687;
 
-// INMP441 microphone pins (see README for wiring)
+// INMP441 microphone pins
+//  VCC -> 3.3V
+//  GND -> GND
+//  SCK -> GPIO26 (BCLK)
+//  WS  -> GPIO25
+//  SD  -> GPIO33
 #define MIC_BCLK 26
 #define MIC_WS   25
 #define MIC_SD   33

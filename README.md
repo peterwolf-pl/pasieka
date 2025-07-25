@@ -23,11 +23,13 @@ features work correctly.
 The script `server/sql/add_frequency_column.sql` adds a `frequency` column so you can
 store microphone readings in Hz alongside weight measurements.
 
-The ESP32 firmware reads an INMP441 digital microphone. Connect the module as
-follows:
+The ESP32 firmware reads an INMP441 digital microphone. Connect the module's
+pins as follows:
 
-- **BCLK** to GPIO26
-- **WS/LRCL** to GPIO25
-- **DOUT** to GPIO33
+- **VCC** to the ESP32's 3.3&nbsp;V
+- **GND** to any ground
+- **SCK (BCLK)** to GPIO26
+- **WS** to GPIO25
+- **SD** to GPIO33
 
 The sketch sends the measured frequency in the `hz` field of the API request.
