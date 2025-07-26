@@ -20,3 +20,37 @@ To verify the PHP scripts you can run `php -l` on `server/setup.php`, `server/in
 The SQL script `server/sql/update_board_id.sql` adds the `board_id` column to the
 `measurements` table and updates previous records so the new multi-board
 features work correctly.
+The script `server/sql/add_frequency_column.sql` adds a `frequency` column so you can
+store microphone readings in Hz alongside weight measurements.
+
+The ESP32 firmware reads an INMP441 digital microphone. Connect the module's
+pins as follows:
+
+- **VCC** to the ESP32's 3.3&nbsp;V
+- **GND** to any ground
+- **SCK (BCLK)** to GPIO26
+- **WS** to GPIO25
+- **SD** to GPIO33
+
+The sketch sends the measured frequency in the `hz` field of the API request.
+
+For environments where only the microphone is needed, a simplified
+`microphone_esp8266.ino` sketch is provided for the ESP8266. Connect the
+INMP441 pins like so:
+
+- **VCC** to the ESP8266's 3.3&nbsp;V
+- **GND** to any ground
+- **SCK (BCLK)** to GPIO14 (D5)
+- **WS** to GPIO15 (D8)
+- **SD** to GPIO13 (D7)
+
+These pins are fixed by the ESP8266 hardware, so the sketch does not set
+them in code.
+
+This firmware reads the microphone and periodically posts the frequency to the
+same `add.php` endpoint without weight measurements. It relies on the
+`core_esp8266_i2s.h` API from the ESP8266 Arduino core, so be sure the
+appropriate board package is installed when compiling.
+
+The charts on both public and admin pages now show weight deltas for the last
+12, 24 and 72 hours above each plot.

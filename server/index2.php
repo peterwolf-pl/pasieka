@@ -11,7 +11,7 @@ if (!isset($_SESSION['logged_in'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Waga Pasieki | pszczol.one.pl</title>
+    <title>Waga Ula | pszczol.one.pl</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -52,12 +52,11 @@ if (!isset($_SESSION['logged_in'])) {
 <body>
     
     <header>
-        <h1>🐝 Waga Ula 🐝</h1>
-        <p>🐝 Monitoring masy ula 🐝 w czasie rzeczywistym i do tego jeszcze HD w 3D 🐝</p>
+        <h1>🐝 Waga Ula</h1>
+        <p>Monitoring masy ula w czasie rzeczywistym</p>
     </header>
 
     <div class="container mt-4">
-        <div class="mb-3 text-center">
         <div class="mb-3">
             <label>Kolor linii: <input type="color" id="lineColor" value="#198754"></label>
             <label class="ms-3">Typ wykresu:
@@ -69,10 +68,10 @@ if (!isset($_SESSION['logged_in'])) {
             <button id="saveStyle" class="btn btn-sm btn-primary ms-3">Zapisz</button>
 <a href="https://pszczol.one.pl/setup.php">setup</a>
         </div>
-        
+        <div class="mb-3 text-center">
             <label>Od: <input type="datetime-local" id="startRange"></label>
             <label class="ms-2">Do: <input type="datetime-local" id="endRange"></label>
-            <button id="applyRange" class="btn btn-sm btn-primary ms-2">Pokaż</button><br><br>
+            <button id="applyRange" class="btn btn-sm btn-primary ms-2">Pokaż</button>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="12">Ostatnie 12h</button>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="24">Ostatnie 24h</button>
             <button class="btn btn-sm btn-secondary ms-2 quick-range" data-hours="72">Ostatnie 72h</button>
@@ -153,11 +152,15 @@ if (!isset($_SESSION['logged_in'])) {
                 })
                 .then(data => {
                     const filteredWeights = [];
+                    const filteredHz = [];
                     const filteredTimestamps = [];
                     data.timestamps.forEach((t, i) => {
                         const ts = new Date(t).getTime();
                         if (ts >= start && ts <= end) {
                             filteredWeights.push(data.weights[i]);
+                            if(data.hz){
+                                filteredHz.push(data.hz[i]);
+                            }
                             filteredTimestamps.push(t);
                         }
                     });
@@ -179,7 +182,8 @@ if (!isset($_SESSION['logged_in'])) {
                 const delta12 = deltaWithin(12);
                 const delta24 = deltaWithin(24);
                 const delta72 = deltaWithin(72);
-                document.getElementById(`delta${id}`).textContent = `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
+                document.getElementById(`delta${id}`).textContent =
+                    `\u0394 12h: ${delta12.toFixed(2)} g | \u0394 24h: ${delta24.toFixed(2)} g | \u0394 72h: ${delta72.toFixed(2)} g`;
 
                 const ctx = document.getElementById(`chart${id}`).getContext('2d');
                 if(charts[id]) charts[id].destroy();
@@ -193,8 +197,19 @@ if (!isset($_SESSION['logged_in'])) {
                             borderWidth: 2,
                             borderColor: colorInput.value,
                             backgroundColor: colorInput.value + '33',
+                            yAxisID: 'y',
                             fill: true,
                             tension: 0.4,
+                        }, {
+                            label: `Częstotliwość ${id} (Hz)`,
+                            data: filteredHz,
+                            borderWidth: 2,
+                            borderColor: 'orange',
+                            backgroundColor: 'rgba(255,165,0,0.3)',
+                            yAxisID: 'y1',
+                            fill: false,
+                            tension: 0.4,
+                            type: 'line'
                         }]
                     },
                     options: {
@@ -203,11 +218,16 @@ if (!isset($_SESSION['logged_in'])) {
                         scales: {
                             y: {
                                 beginAtZero: false,
-                                title:{display:true,text:'Waga [g]'}
+                                title: {display: true, text: 'Waga [g]'}
+                            },
+                            y1: {
+                                beginAtZero: false,
+                                position: 'right',
+                                title: {display: true, text: 'Hz'}
                             },
                             x: {
-                                ticks:{maxRotation:90,minRotation:45},
-                                title:{display:true,text:'Czas pomiaru'}
+                                ticks: {maxRotation: 90, minRotation: 45},
+                                title: {display: true, text: 'Czas pomiaru'}
                             }
                         }
                     }
