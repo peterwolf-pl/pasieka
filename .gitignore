@@ -1,0 +1,23 @@
+# Arduino build files
+*.bin
+*.hex
+build/
+
+# PHP caches
+cache/
+tmp/
+*.log
+
+# Editor and IDE files
+*~
+*.swp
+*.swo
+*.bak
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+
