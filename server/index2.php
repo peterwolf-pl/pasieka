@@ -121,11 +121,17 @@ if (!isset($_SESSION['logged_in'])) {
     const endInput = document.getElementById('endRange');
     const applyBtn = document.getElementById('applyRange');
 
+    function toLocal(date){
+        const off = date.getTimezoneOffset();
+        const local = new Date(date.getTime() - off * 60000);
+        return local.toISOString().slice(0,16);
+    }
+
     function setRange(hours){
         const now = new Date();
-        endInput.value = now.toISOString().slice(0,16);
+        endInput.value = toLocal(now);
         const start = new Date(now.getTime() - hours * 60 * 60 * 1000);
-        startInput.value = start.toISOString().slice(0,16);
+        startInput.value = toLocal(start);
     }
 
     document.querySelectorAll('.quick-range').forEach(btn => {
