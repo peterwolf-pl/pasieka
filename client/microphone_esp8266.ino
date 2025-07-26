@@ -21,9 +21,10 @@ const int SAMPLES = 1024;
 int32_t micBuffer[SAMPLES];
 
 void setupMic() {
-  // Initialize I2S and set pin mapping before starting reception
+  // Initialize I2S before starting reception
+  // The ESP8266 uses fixed pins for I2S:
+  // BCLK -> GPIO14, WS -> GPIO15, SD -> GPIO13
   i2s_begin();
-  i2s_set_pin(MIC_BCLK, MIC_WS, MIC_SD);
   // Enable I2S reception only and configure the sample rate
   i2s_rxtx_begin(true, false);
   i2s_set_rate(SAMPLE_RATE);

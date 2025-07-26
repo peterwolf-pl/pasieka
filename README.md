@@ -44,6 +44,9 @@ INMP441 pins like so:
 - **WS** to GPIO15 (D8)
 - **SD** to GPIO13 (D7)
 
+These pins are fixed by the ESP8266 hardware, so the sketch does not set
+them in code.
+
 This firmware reads the microphone and periodically posts the frequency to the
 same `add.php` endpoint without weight measurements. It relies on the
 `core_esp8266_i2s.h` API from the ESP8266 Arduino core, so be sure the
